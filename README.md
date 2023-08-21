@@ -1,5 +1,5 @@
 # Neural Radiance Field (NeRF) Toy Example Visualization
-This code provides a simple implementation of a Neural Radiance Fields (NeRF) model for synthesizing and visualizing 3D scenes. NeRF is a deep learning technique that can generate realistic 3D scenes from a collection of 2D images. The code showcases the process of training a NeRF model on synthetic camera pose data and generating a new view of the scene.
+This repository contains a Python script for visualizing the results of a Neural Radiance Field (NeRF) model. NeRF is a technique used for synthesizing novel views of a 3D scene using neural networks. This script generates and visualizes a 3D scene with synthetic camera poses, where each point in the scene is assigned a color value predicted by the NeRF model.
 
 ![My Image](images/interactive_nerf_scene.png)
 
