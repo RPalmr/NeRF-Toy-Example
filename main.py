@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
 import mplcursors
-from matplotlib.widgets import Slider, Button, RadioButtons
+from matplotlib.widgets import Slider
 
 # Function to generate synthetic camera poses
 def generate_synthetic_data(num_samples=50):
@@ -102,8 +102,16 @@ def update(val):
 
 slider.on_changed(update)
 
-# Save the visualization as an image
-plt.savefig('interactive_nerf_scene.png', dpi=300, bbox_inches='tight')
+# Save the visualization as an image in the "images" folder
+image_filename = 'interactive_nerf_scene.png'
+image_path = f'images/{image_filename}'
+
+# Create the "images" folder if it doesn't exist
+import os
+if not os.path.exists('images'):
+    os.makedirs('images')
+
+plt.savefig(image_path, dpi=300, bbox_inches='tight')
 
 # Display the visualization
 plt.show()
