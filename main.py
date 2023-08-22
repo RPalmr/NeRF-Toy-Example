@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LinearSegmentedColormap
 import mplcursors
 from matplotlib.widgets import Slider
+import os
 
 # Function to generate synthetic camera poses
 def generate_synthetic_data(num_samples=50):
@@ -27,6 +28,34 @@ class NeRF(nn.Module):
     def forward(self, inputs):
         return self.fc(inputs)
 
+# Training function
+def train_nerf(nerf, dataloader, num_epochs=500, learning_rate=1e-3):
+    optimizer = torch.optim.Adam(nerf.parameters(), lr=learning_rate)
+    loss_history = []  # To store the loss values over epochs
+    
+    for epoch in range(num_epochs):
+        epoch_loss = 0.0
+        for batch in dataloader:
+            optimizer.zero_grad()
+            predicted_colors = nerf(batch)
+            loss = torch.mean(predicted_colors)
+            loss.backward()
+            optimizer.step()
+            epoch_loss += loss.item()
+        
+        # Calculate average loss for the epoch
+        epoch_loss /= len(dataloader)
+        loss_history.append(epoch_loss)
+        
+        # Print training progress
+        if epoch % 50 == 0:
+            print(f"Epoch [{epoch}/{num_epochs}], Loss: {epoch_loss}")
+    
+    return loss_history
+
+# Number of training epochs
+num_epochs = 500
+
 # Generate synthetic camera poses
 camera_poses = generate_synthetic_data()
 
@@ -36,29 +65,16 @@ ray_origins = torch.FloatTensor(camera_poses)
 # Initialize NeRF model
 nerf = NeRF()
 
-# Define optimizer for model training
-optimizer = torch.optim.Adam(nerf.parameters(), lr=1e-3)
+# Create a DataLoader for batched training
+batch_size = 16
+ray_origins_tensor = torch.tensor(camera_poses, dtype=torch.float32)
+dataloader = torch.utils.data.DataLoader(ray_origins_tensor, batch_size=batch_size, shuffle=True)
 
-# Training loop
-num_epochs = 500
-for epoch in range(num_epochs):
-    optimizer.zero_grad()
-    predicted_colors = nerf(ray_origins)
-    loss = torch.mean(predicted_colors)
-    loss.backward()
-    optimizer.step()
-    
-    # Print training progress
-    if epoch % 50 == 0:
-        print(f"Epoch [{epoch}/{num_epochs}], Loss: {loss.item()}")
-
-# Generate colors for a new view
-new_ray_origins = torch.FloatTensor([[2.0, 2.0, 2.0]])  # New view origin
-
-with torch.no_grad():
-    new_view_colors = nerf(new_ray_origins)
+# Train NeRF model and get loss history
+loss_history = train_nerf(nerf, dataloader, num_epochs=num_epochs)
 
 # Normalize predicted colors for visualization
+predicted_colors = nerf(ray_origins)
 normalized_colors = (predicted_colors - predicted_colors.min()) / (predicted_colors.max() - predicted_colors.min())
 
 # Create a custom colormap for smoother color transitions
@@ -104,14 +120,21 @@ slider.on_changed(update)
 
 # Save the visualization as an image in the "images" folder
 image_filename = 'interactive_nerf_scene.png'
-image_path = f'images/{image_filename}'
+image_path = os.path.join('images', image_filename)
 
 # Create the "images" folder if it doesn't exist
-import os
-if not os.path.exists('images'):
-    os.makedirs('images')
+os.makedirs('images', exist_ok=True)
 
 plt.savefig(image_path, dpi=300, bbox_inches='tight')
+
+# Plot the loss history
+plt.figure()
+plt.plot(range(num_epochs), loss_history, marker='o')
+plt.xlabel('Epoch')
+plt.ylabel('Average Loss')
+plt.title('Training Loss Progress')
+plt.grid()
+plt.show()
 
 # Display the visualization
 plt.show()
