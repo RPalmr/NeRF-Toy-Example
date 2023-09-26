@@ -51,4 +51,4 @@ This code serves as an educational example and does not cover all the complexiti
 Feel free to modify and extend this code to experiment with different NeRF architectures, datasets, and visualization techniques.
 
 # License
-This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).# NeRF-Toy-Example
